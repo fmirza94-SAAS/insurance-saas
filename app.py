@@ -74,7 +74,7 @@ st.caption("Commercial Grade Production Suite v1.0")
 
 # --- SECURE BACKEND API KEY HARDCODING ---
 # Paste your actual secret Gemini API Key between the quotes below:
-api_key = "PASTE_YOUR_ACTUAL_GEMINI_API_KEY_HERE"
+api_key = "AIzaSyCugsZzoIvXYVSZxUDtEPLDLeKoFJW_joA"
 
 # Initialize the generative AI processing client engine on the back-end
 client = genai.Client(api_key=api_key)
