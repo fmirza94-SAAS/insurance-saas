@@ -10,7 +10,7 @@ from google import genai
 from supabase import create_client
 
 # ---------------------------------------------------------------------------
-# 1. DIRECT DATABASE CONFIGURATION & INITIALIZATION (STABLE VERSION)
+# 1. DIRECT DATABASE CONFIGURATION & INITIALIZATION (STABLE DIRECT OVERRIDE)
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="SaaS Insurance Portal", layout="wide")
 
@@ -18,21 +18,18 @@ target_url = "https://supabase.co"
 target_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaWhmbW5zcG55bHlsb2Jycm1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDExNjksImV4cCI6MjA5ODMxNzE2OX0.kMY9NwQhEI3VAsmLPR3y5XDOZ6FBcsW-0Y-2SOPudjs"
 
 supabase = create_client(target_url, target_key)
+supabase.auth._client.base_url = f"{target_url}/auth/v1/"
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user_email' not in st.session_state:
     st.session_state['user_email'] = None
 
-# ---------------------------------------------------------------------------
-# 2. SAAS ENCRYPTED SHIELD LAYER (Login / Signup Panel)
-# ---------------------------------------------------------------------------
 if not st.session_state['logged_in']:
     st.title("🛡️ BrokerFlow AI - Insurance Portal")
     st.subheader("Enterprise Proposal Suite")
     
     auth_mode = st.radio("Choose Action", ["Login to Account", "Create Free Agent Account"])
-    
     email = st.text_input("Agency Email Address")
     password = st.text_input("Password", type="password")
     
@@ -95,7 +92,7 @@ st.title("📋 AI-Powered Insurance Proposal Generator")
 st.caption("Commercial Grade Production Suite v1.0")
 
 # --- SECURE BACKEND API KEY HARDCODING ---
-api_key = "AIzaSyCugsZzoIvXYVSZxUDtEPLDLeKoFJW_joA"
+api_key = "PASTE_YOUR_ACTUAL_GEMINI_API_KEY_HERE"
 
 client = genai.Client(api_key=api_key)
 
@@ -122,6 +119,7 @@ uploaded_files = st.file_uploader(
 
 additional_notes = st.text_area("Add any additional email text, client requirements, or manual notes here:")
 extracted_corpus = ""
+
 if uploaded_files or additional_notes:
     st.info("Documents received! Extracting data fields safely...")
     
@@ -172,7 +170,6 @@ if uploaded_files or additional_notes:
         def create_word_doc(ai_text):
             doc = docx.Document()
             
-            # Force Landscape Layout to support grid comparison cards
             sections = doc.sections
             for section in sections:
                 new_width, new_height = section.page_height, section.page_width
@@ -184,13 +181,11 @@ if uploaded_files or additional_notes:
                 section.left_margin = Inches(0.5)
                 section.right_margin = Inches(0.5)
             
-            # --- 1. PROPOSAL TITLE BLOCK ---
             p = doc.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             run = p.add_run("COMMERCIAL INSURANCE COVERAGE PROPOSAL OPTIONS")
             style_text_run(run, font_name="Arial", size_pt=14, bold=True, color_rgb=RGBColor(0, 51, 102))
             
-            # --- 2. THE EMPTY EXPIRING COVERAGE TABLE ---
             doc.add_heading("Expiring Coverage Summary", level=2)
             exp_table = doc.add_table(rows=2, cols=10)
             exp_table.style = 'Table Grid'
@@ -206,10 +201,9 @@ if uploaded_files or additional_notes:
                     for r in para.runs:
                         style_text_run(r, font_name="Arial", size_pt=9, bold=True, color_rgb=RGBColor(255, 255, 255))
             
-            doc.add_paragraph() # Spacer
+            doc.add_paragraph()
             doc.add_heading("Proposed Coverage Marketing Options", level=2)
             
-            # --- 3. DYNAMIC PARSING FOR THE PROPOSED GRIDS ---
             lines = ai_text.split('\n')
             in_grid = False
             grid_title = "Proposed Options"
@@ -281,7 +275,10 @@ if uploaded_files or additional_notes:
                         prem_val = parts[3].replace("Premium:", "").strip() if len(parts) > 3 else ""
                         
                         options_extracted.append({
-                            "name": opt_name, "limit": limit_val, "deductible": ded_val, "premium": prem_val
+                            "name": opt_name, 
+                            "limit": limit_val, 
+                            "deductible": ded_val, 
+                            "premium": prem_val
                         })
                 else:
                     if line.strip() and not line.startswith('['):
