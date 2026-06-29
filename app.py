@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 import pdfplumber
 import docx
@@ -6,28 +5,25 @@ from google import genai
 from supabase import create_client
 
 # ---------------------------------------------------------------------------
-# 1. CLEAN ENVIRONMENT & DATABASE SYSTEM INITIALIZATION
+# 1. DIRECT DATABASE CONFIGURATION & INITIALIZATION (STABLE VERSION)
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="SaaS Insurance Portal", layout="wide")
 
-# Force override default package endpoints to block backend 404 errors completely
-os.environ["SUPABASE_URL"] = "https://supabase.co"
-os.environ["SUPABASE_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaWhmbW5zcG55bHlsb2Jycm1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDExNjksImV4cCI6MjA5ODMxNzE2OX0.kMY9NwQhEI3VAsmLPR3y5XDOZ6FBcsW-0Y-2SOPudjs"
+# Target credentials explicitly pointing to your unique cloud instance
+target_url = "https://kdihfmnspnylylobrrmk.supabase.co"
+target_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaWhmbW5zcG55bHlsb2Jycm1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDExNjksImV4cCI6MjA5ODMxNzE2OX0.kMY9NwQhEI3VAsmLPR3y5XDOZ6FBcsW-0Y-2SOPudjs"
 
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+# Initialize client simply to bypass the recent ClientOptions package bug
+supabase = create_client(target_url, target_key)
 
-# Establish connection to your Supabase project instance
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Track agent session context across page reloads
+# Keep track of active agent login state
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user_email' not in st.session_state:
     st.session_state['user_email'] = None
 
 # ---------------------------------------------------------------------------
-# 2. USER AUTHENTICATION INTERFACE (SaaS Shield)
+# 2. SAAS ENCRYPTED SHIELD LAYER (Login / Signup Panel)
 # ---------------------------------------------------------------------------
 if not st.session_state['logged_in']:
     st.title("🛡️ BrokerFlow AI - Insurance Portal")
@@ -45,7 +41,7 @@ if not st.session_state['logged_in']:
             else:
                 try:
                     res = supabase.auth.sign_up({"email": email, "password": password})
-                    st.success("✅ Account created successfully! Please try logging in below.")
+                    st.success("✅ Account created successfully! Please select 'Login to Account' above to log in.")
                 except Exception as e:
                     st.error(f"Registration failed: {str(e)}")
                 
@@ -60,8 +56,9 @@ if not st.session_state['logged_in']:
             except Exception as e:
                 st.error("❌ Invalid agency credentials. Please check your spelling or register.")
     st.stop()
+
 # ---------------------------------------------------------------------------
-# 3. CORE PROPOSAL ENGINE (Unlocks only after successful login)
+# 3. CORE PROCESSING SUITE (Unlocks strictly after verification matches)
 # ---------------------------------------------------------------------------
 st.sidebar.markdown(f"👤 **Agent Workspace:**\n{st.session_state['user_email']}")
 if st.sidebar.button("Logout"):
